@@ -29,19 +29,39 @@ try
 
                 Console.WriteLine("---------------------------------------------------------------------------------------------------------");
 
-                var dataObject1 = dataObject.GroupBy(s => s.CustomerId)
-                                .Select(g => new
-                                {
-                                    customer = g.Key,
-                                    TotalCallsPrice = (g.Sum(s => s.aPI_Calls.All(char.IsDigit) == true ? int.Parse(s.aPI_Calls) : 0 ) <= 10000) ? (g.Sum(s => s.aPI_Calls.All(char.IsDigit) == true ? int.Parse(s.aPI_Calls) : 0) * 0.01) : (0.008 * g.Sum(s => s.aPI_Calls.All(char.IsDigit) == true ? int.Parse(s.aPI_Calls) : 0)),
-                                    TotalStoragePrice = (g.Sum(s => s.Storage_GB) * 0.25),
-                                    TotalComputeTime = (g.Sum(s => s.Compute_Minutes) * 0.05)
-                                });
+                var dataObject1 = dataObject.Select(g => new
+                {
+                    customer = g.CustomerId,
+                    CallsPrice = g.aPI_Calls.All(char.IsDigit) == false ? 0 : int.Parse(g.aPI_Calls),
+                    StoragePrice = g.Storage_GB,
+                    ComputeTime = g.Compute_Minutes
+                });
+
 
                 foreach (var grp in dataObject1)
                 {
-                    Console.WriteLine("Customer :" + grp.customer + " API Calls :" + grp.TotalCallsPrice.ToString() + " Storage GB :" + grp.TotalStoragePrice.ToString() + " Call Minutes : " + grp.TotalComputeTime.ToString());
+                    Console.WriteLine("Customer :" + grp.customer + " API Calls :" + grp.CallsPrice.ToString() + " Storage GB :" + grp.StoragePrice.ToString() + " Call Minutes : " + grp.ComputeTime.ToString());
                 }
+
+                var dataObject2 = dataObject1.GroupBy(s => s.customer)
+                 .Select(g => new
+                 {
+                     customer = g.Key,
+                     TotalCallsPrice = (g.Sum(s => s.CallsPrice) <= 10000 ? g.Sum(s => s.CallsPrice) * 0.01 : g.Sum(s => s.CallsPrice) * 0.08),
+                     TotalStoragePrice = (g.Sum(s => s.StoragePrice) * 0.25),
+                     TotalComputeTime = (g.Sum(s => s.ComputeTime) * 0.05)
+                 });
+
+                Console.WriteLine("---------------------------------------------------------------------------------------------------------");
+
+
+
+                foreach (var grp in dataObject2)
+                {
+                    Console.WriteLine("Customer ID :" + grp.customer + " Total API Calls price :" + grp.TotalCallsPrice.ToString() + " Total Storage GB price :" + grp.TotalStoragePrice.ToString() + " Total Call Minutes price : " + grp.TotalComputeTime.ToString());
+                }
+
+
 
 
                 Console.ReadLine();
